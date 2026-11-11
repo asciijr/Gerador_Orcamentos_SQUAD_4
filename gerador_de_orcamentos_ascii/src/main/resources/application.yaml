@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: gerador-de-orcamentos
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/orcamentos}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+
+server:
+  port: ${SERVER_PORT:8080}
