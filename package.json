@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "latest",
+    "@commitlint/config-conventional": "latest",
+    "@fission-ai/openspec": "2.1.0",
+    "husky": "latest",
+    "lint-staged": "latest"
+  }
+}

@@ -1,0 +1,69 @@
+schema: spec-driven
+
+# Skills ficam versionadas no repositório (.agents/skills e .claude/skills),
+# para que todo o squad use exatamente a mesma versão.
+skillsScope: project
+
+githubCopilot:
+  cloudAgent: false
+
+context: |
+  Language: Portuguese (pt-BR)
+  All artifacts must be written in Portuguese (pt-BR).
+  Keep OpenSpec structural headings and SHALL/MUST keywords in English.
+
+  Projeto: Gerador de Orçamentos da ASCII (empresa júnior da FACOM/UFU), Squad 4.
+  Ferramenta interna standalone (Documento de Escopo): Projetos informa o esforço em horas,
+  Comercial informa custo/hora, despesas extras e margem; o sistema calcula o preço, salva o
+  orçamento, gera o PDF com a identidade da ASCII e lista o histórico para auditoria.
+  Sem CRM e sem envio de e-mail no MVP.
+
+  Fórmula do MVP (Blueprint, a validar pelo Diretor Comercial):
+    custoMaoDeObra = horas × custoHora
+    custoTotal     = custoMaoDeObra + despesasExtras
+    valorMargem    = custoTotal × margem% / 100
+    precoFinal     = custoTotal + valorMargem
+  Valores com decimal.js (nunca number/float); parcelas com 2 casas, ROUND_HALF_UP.
+
+  Stack (ASCII Playbook, Guia de Engenharia):
+  - Frontend: React + TypeScript + Vite, organizado em Atomic Design
+    (atoms, molecules, organisms, templates, pages). Chamadas à API só em src/services.
+  - Backend: NestJS (Node LTS + TypeScript) em Monolito Modular:
+    src/modules/<dominio>/ com service como interface pública; src/shared só infraestrutura.
+    Proibido importar arquivos internos de outro módulo.
+  - Banco: PostgreSQL em container; alterações só por migration (Prisma).
+  - Testes: Jest (backend), Vitest + Testing Library (frontend).
+  - Tudo roda com Docker Compose; comandos do projeto via `docker compose exec`.
+
+  Regras do Playbook que valem para qualquer artefato:
+  - Um change do OpenSpec corresponde a exatamente um card do Odoo / issue do GitHub.
+  - TDD: a suíte de testes do card é escrita pelo Tech Lead ou pelo QA ANTES do código.
+    Durante o apply é proibido criar, alterar, simplificar ou comentar arquivos de teste
+    (*.spec.ts, *.test.tsx). O código de produção se adapta ao teste.
+  - Nenhuma dependência nova sem aval do Tech Lead (verificada no npm).
+  - Nomes de código em inglês; documentação e commits em português.
+  - O CLI do OpenSpec é dependência do repositório: execute `npx openspec <comando>`.
+
+rules:
+  proposal:
+    - 'Comece citando o card (ex.: "Card #4") e o item da Matriz MoSCoW que ele atende'
+    - 'Liste explicitamente o que está fora do escopo'
+    - 'Declare se o change exige dependência nova; se sim, ela precisa de aval do Tech Lead'
+  specs:
+    - 'Cada requisito tem cenários WHEN/THEN que possam virar casos de teste diretamente'
+    - 'Inclua cenários de erro (entradas inválidas, recurso não encontrado) com o status HTTP esperado'
+  design:
+    - 'Indique o módulo de domínio (backend) ou o nível do Atomic Design (frontend) de cada arquivo'
+  tasks:
+    - 'A primeira tarefa é sempre "Suíte de testes do card commitada pelo Tech Lead/QA"'
+    - 'Tarefas de no máximo 2 horas cada'
+    - 'Não crie tarefas de gestão (prazo, responsável, status): isso vive no Odoo'
+
+operations:
+  apply:
+    guidance:
+      - 'Nunca edite arquivos de teste; se um teste parecer errado, pare e avise o Tech Lead'
+      - 'Rode a suíte dentro do container (docker compose exec backend npm test) antes de concluir'
+  archive:
+    guidance:
+      - 'Arquive o change dentro da própria branch do card, antes do merge, para que entre no mesmo PR'

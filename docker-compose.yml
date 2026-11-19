@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:16-alpine
+    env_file: .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      target: dev
+    env_file: .env
+    environment:
+      # Necessário para o hot reload funcionar em bind mounts no Windows/macOS
+      TSC_WATCHFILE: DynamicPriorityPolling
+      TSC_WATCHDIRECTORY: DynamicPriorityPolling
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    environment:
+      API_PROXY_TARGET: http://backend:3000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

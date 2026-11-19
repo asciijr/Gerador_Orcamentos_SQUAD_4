@@ -1,0 +1,27 @@
+# Dependências e builds
+node_modules/
+dist/
+dist-ssr/
+build/
+coverage/
+*.tsbuildinfo
+
+# Ambiente (nunca versionar segredos). O .env.example é versionado.
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editores e SO
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.DS_Store
+Thumbs.db
+
+# Prisma Client gerado (prisma generate roda no npm install e ao subir o container)
+backend/src/generated/

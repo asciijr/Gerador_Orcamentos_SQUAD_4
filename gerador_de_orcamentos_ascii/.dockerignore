@@ -1,7 +1,0 @@
-.git
-.gradle
-.idea
-.vscode
-build
-out
-*.iml
