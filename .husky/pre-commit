@@ -1,0 +1,17 @@
+# Bloqueia a inclusão acidental de arquivos de ambiente (.env, .env.local etc.).
+# O .env.example é permitido, pois deve ser versionado.
+ENV_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '(^|/)\.env(\..+)?$' | grep -v -E '(^|/)\.env\.example$' || true)
+if [ -n "$ENV_FILES" ]; then
+  echo "[ERRO] Arquivo de ambiente detectado na staging area:"
+  echo "$ENV_FILES"
+  echo "Remova do commit com: git reset HEAD <arquivo>"
+  exit 1
+fi
+
+# Lint dos arquivos TypeScript alterados (frontend e backend Node)
+npx lint-staged
+
+# Backend Python: roda o Ruff dentro do container, se houver .py alterado
+if git diff --cached --name-only | grep -q '^backend/.*\.py$'; then
+  docker compose run --rm --no-deps backend sh -c "ruff check . && ruff format --check ."
+fi
