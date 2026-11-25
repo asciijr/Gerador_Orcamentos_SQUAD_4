@@ -24,4 +24,6 @@ Primeiro código de negócio do backend. Ver proposal.md (Why) e specs/budget-pr
 
 ## Risks / Trade-offs
 
-- [Fórmula ainda não validada pelo Comercial] → validar o orçamento de referência na assinatura do Blueprint; se mudar, a suíte é ajustada pelo Tech Lead antes do card começar.
+- [Fórmula ainda não validada pelo Comercial] → o card foi entregue com a fórmula genérica do Blueprint como **provisória**. Quando o Diretor Comercial aprovar a fórmula definitiva, ela entra por um change novo (`update-pricing-formula`, com `MODIFIED Requirements`): o Tech Lead ajusta a suíte primeiro e a implementação muda só em `applyPricingFormula`.
+- **Isolamento da fórmula:** `pricing-engine.ts` separa validação (`parseInput`), fórmula (`applyPricingFormula`) e serialização (`formatResult`), para que uma fórmula nova não mexa nas regras de entrada e de arredondamento.
+- **Precisão:** o motor usa um construtor `Decimal.clone({ precision: 40 })` próprio, isolado da configuração global do decimal.js e com folga para os maiores valores das colunas `DECIMAL(14, 2)`.
