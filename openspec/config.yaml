@@ -18,7 +18,9 @@ context: |
   orçamento, gera o PDF com a identidade da ASCII e lista o histórico para auditoria.
   Sem CRM e sem envio de e-mail no MVP.
 
-  Fórmula do MVP (Blueprint, a validar pelo Diretor Comercial):
+  Fórmula do MVP (Blueprint, PROVISÓRIA até a validação do Diretor Comercial;
+  implementada em backend/src/modules/budgets/pricing-engine.ts, função applyPricingFormula,
+  com spec em openspec/specs/budget-pricing/spec.md):
     custoMaoDeObra = horas × custoHora
     custoTotal     = custoMaoDeObra + despesasExtras
     valorMargem    = custoTotal × margem% / 100
