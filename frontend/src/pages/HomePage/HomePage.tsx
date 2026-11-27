@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getHealth } from '../../services/api';
+import { PriceCalculator } from '../../components/organisms/PriceCalculator';
 
 type ApiState = 'carregando' | 'online' | 'offline';
 
@@ -24,6 +25,7 @@ export function HomePage() {
       <h1>Gerador de Orçamentos</h1>
       <p>ASCII · Squad 4</p>
       <p data-testid="api-status">API: {apiState}</p>
+      <PriceCalculator />
     </main>
   );
 }
