@@ -4,18 +4,27 @@ export interface CalculateBudgetInput {
   hours: string;
   hourlyRate: string;
   extraExpenses: string;
-  marginPercent: string;
+  contingencyPercent: string;
+  contributionPercent: string;
 }
 
 export interface BudgetCalculationResult {
   laborCost: string;
   extraExpenses: string;
-  totalCost: string;
-  marginValue: string;
+  baseCost: string;
+  contingencyValue: string;
+  contributionValue: string;
   finalPrice: string;
 }
 
-export type BudgetFieldName = 'hours' | 'hourlyRate' | 'extraExpenses' | 'marginPercent';
+export type BudgetFieldName =
+  | 'client'
+  | 'project'
+  | 'hours'
+  | 'hourlyRate'
+  | 'extraExpenses'
+  | 'contingencyPercent'
+  | 'contributionPercent';
 
 export class BudgetApiError extends Error {
   status: number;
@@ -33,16 +42,22 @@ export class BudgetApiError extends Error {
   }
 }
 
-const VALID_FIELDS: BudgetFieldName[] = ['hours', 'hourlyRate', 'extraExpenses', 'marginPercent'];
+const VALID_FIELDS: BudgetFieldName[] = [
+  'client',
+  'project',
+  'hours',
+  'hourlyRate',
+  'extraExpenses',
+  'contingencyPercent',
+  'contributionPercent',
+];
 
 export async function calculateBudget(
   input: CalculateBudgetInput,
 ): Promise<BudgetCalculationResult> {
   const response = await fetch('/api/budgets/calculate', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   });
 

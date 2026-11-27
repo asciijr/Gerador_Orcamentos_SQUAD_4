@@ -28,7 +28,8 @@ function fakeBudget() {
     hours: fakeAmount(20, 400),
     hourlyRate: fakeAmount(40, 150),
     extraExpenses: fakeAmount(0, 5000),
-    marginPercent: fakeAmount(10, 40),
+    contingencyPercent: fakeAmount(20, 40),
+    contributionPercent: fakeAmount(10, 30),
   } satisfies PricingInput;
 
   return {

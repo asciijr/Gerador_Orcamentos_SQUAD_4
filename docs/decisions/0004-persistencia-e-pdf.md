@@ -29,5 +29,5 @@ estético" com a identidade da ASCII. O MVP tem 3,5 semanas e um squad de estuda
 
 ## Consequências
 
-- Mudar a fórmula exige migration nova (coluna nova), registrada como decisão.
+- Mudar a fórmula exige migration nova (coluna nova), registrada como decisão (ver [0005](0005-separacao-margens-orcamento.md)).
 - O layout é escrito em objetos JavaScript, não em HTML; quem faz o layout precisa ler a documentação do pdfmake.

@@ -2,7 +2,7 @@
 
 Ferramenta interna da ASCII (empresa júnior da FACOM/UFU) que une o esforço estimado pelo
 time de **Projetos** (horas) aos parâmetros do **Comercial** (custo/hora, despesas extras e
-margem), calcula o preço, salva o orçamento, gera o PDF da proposta com a identidade visual
+margens de contingência e contribuição), calcula o preço, salva o orçamento, gera o PDF da proposta com a identidade visual
 da ASCII e mantém um histórico para auditoria. Aplicação standalone: sem CRM e sem
 envio de e-mail no MVP.
 
