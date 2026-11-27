@@ -33,12 +33,7 @@ export class BudgetApiError extends Error {
   }
 }
 
-const VALID_FIELDS: BudgetFieldName[] = [
-  'hours',
-  'hourlyRate',
-  'extraExpenses',
-  'marginPercent',
-];
+const VALID_FIELDS: BudgetFieldName[] = ['hours', 'hourlyRate', 'extraExpenses', 'marginPercent'];
 
 export async function calculateBudget(
   input: CalculateBudgetInput,
@@ -57,10 +52,7 @@ export async function calculateBudget(
     const fieldErrors: Partial<Record<BudgetFieldName, string>> = {};
 
     if (data && typeof data === 'object') {
-      if (
-        typeof data.field === 'string' &&
-        VALID_FIELDS.includes(data.field as BudgetFieldName)
-      ) {
+      if (typeof data.field === 'string' && VALID_FIELDS.includes(data.field as BudgetFieldName)) {
         fieldErrors[data.field as BudgetFieldName] =
           typeof data.message === 'string' ? data.message : 'Valor inválido';
       }

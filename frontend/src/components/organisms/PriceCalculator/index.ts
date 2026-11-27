@@ -1,1 +1,1 @@
-﻿export { PriceCalculator } from './PriceCalculator';
+export { PriceCalculator } from './PriceCalculator';
