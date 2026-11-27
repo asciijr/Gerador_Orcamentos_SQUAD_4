@@ -16,7 +16,7 @@ describe('PriceCalculator', () => {
     vi.clearAllMocks();
   });
 
-  it('renderiza os 6 campos do formulário', () => {
+  it('renderiza os 7 campos do formulário com margens padrão sugeridas', () => {
     render(<PriceCalculator />);
 
     expect(screen.getByLabelText('Cliente')).toBeInTheDocument();
@@ -24,16 +24,18 @@ describe('PriceCalculator', () => {
     expect(screen.getByLabelText('Horas')).toBeInTheDocument();
     expect(screen.getByLabelText('Custo/hora')).toBeInTheDocument();
     expect(screen.getByLabelText('Despesas extras')).toBeInTheDocument();
-    expect(screen.getByLabelText('Margem %')).toBeInTheDocument();
+    expect(screen.getByLabelText('Margem de contingência %')).toHaveValue(30);
+    expect(screen.getByLabelText('Margem de contribuição %')).toHaveValue(20);
   });
 
   it('chama calculateBudget ao clicar em Calcular e exibe as parcelas em R$', async () => {
     vi.mocked(calculateBudget).mockResolvedValueOnce({
       laborCost: '800.00',
       extraExpenses: '200.00',
-      totalCost: '1000.00',
-      marginValue: '250.00',
-      finalPrice: '1250.00',
+      baseCost: '1000.00',
+      contingencyValue: '300.00',
+      contributionValue: '200.00',
+      finalPrice: '1500.00',
     });
 
     render(<PriceCalculator />);
@@ -43,7 +45,12 @@ describe('PriceCalculator', () => {
     fireEvent.change(screen.getByLabelText('Horas'), { target: { value: '10' } });
     fireEvent.change(screen.getByLabelText('Custo/hora'), { target: { value: '80' } });
     fireEvent.change(screen.getByLabelText('Despesas extras'), { target: { value: '200' } });
-    fireEvent.change(screen.getByLabelText('Margem %'), { target: { value: '25' } });
+    fireEvent.change(screen.getByLabelText('Margem de contingência %'), {
+      target: { value: '30' },
+    });
+    fireEvent.change(screen.getByLabelText('Margem de contribuição %'), {
+      target: { value: '20' },
+    });
 
     fireEvent.click(screen.getByRole('button', { name: 'Calcular' }));
 
@@ -54,15 +61,17 @@ describe('PriceCalculator', () => {
         hours: '10',
         hourlyRate: '80',
         extraExpenses: '200',
-        marginPercent: '25',
+        contingencyPercent: '30',
+        contributionPercent: '20',
       });
     });
 
-    expect(await screen.findByText(/R\$\s*1\.000,00/)).toBeInTheDocument();
-    expect(screen.getByText(/R\$\s*800,00/)).toBeInTheDocument();
-    expect(screen.getByText(/R\$\s*200,00/)).toBeInTheDocument();
-    expect(screen.getByText(/R\$\s*250,00/)).toBeInTheDocument();
-    expect(screen.getByText(/R\$\s*1\.250,00/)).toBeInTheDocument();
+    expect(await screen.findByText(/Preço final:\s*R\$\s*1\.500,00/)).toBeInTheDocument();
+    expect(screen.getByText(/Mão de obra:\s*R\$\s*800,00/)).toBeInTheDocument();
+    expect(screen.getByText(/Despesas extras:\s*R\$\s*200,00/)).toBeInTheDocument();
+    expect(screen.getByText(/Custo-base:\s*R\$\s*1\.000,00/)).toBeInTheDocument();
+    expect(screen.getByText(/Margem de contingência:\s*R\$\s*300,00/)).toBeInTheDocument();
+    expect(screen.getByText(/Margem de contribuição:\s*R\$\s*200,00/)).toBeInTheDocument();
   });
 
   it('exibe a mensagem de erro no campo correto quando a API responde 400', async () => {

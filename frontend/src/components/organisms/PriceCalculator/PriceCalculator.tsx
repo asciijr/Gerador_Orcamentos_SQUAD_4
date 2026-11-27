@@ -23,7 +23,8 @@ export function PriceCalculator() {
   const [hours, setHours] = useState('');
   const [hourlyRate, setHourlyRate] = useState('');
   const [extraExpenses, setExtraExpenses] = useState('');
-  const [marginPercent, setMarginPercent] = useState('');
+  const [contingencyPercent, setContingencyPercent] = useState('30');
+  const [contributionPercent, setContributionPercent] = useState('20');
 
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<BudgetFieldName, string>>>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
@@ -43,7 +44,8 @@ export function PriceCalculator() {
         hours: hours.trim(),
         hourlyRate: hourlyRate.trim(),
         extraExpenses: extraExpenses.trim(),
-        marginPercent: marginPercent.trim(),
+        contingencyPercent: contingencyPercent.trim(),
+        contributionPercent: contributionPercent.trim(),
       });
       setResult(response);
     } catch (error: unknown) {
@@ -72,6 +74,7 @@ export function PriceCalculator() {
             name="client"
             type="text"
             value={client}
+            error={fieldErrors.client}
             onChange={(e) => setClient(e.target.value)}
           />
           <FormField
@@ -80,6 +83,7 @@ export function PriceCalculator() {
             name="project"
             type="text"
             value={project}
+            error={fieldErrors.project}
             onChange={(e) => setProject(e.target.value)}
           />
           <FormField
@@ -117,14 +121,24 @@ export function PriceCalculator() {
             onChange={(e) => setExtraExpenses(e.target.value)}
           />
           <FormField
-            id="budget-margin-percent"
-            label="Margem %"
-            name="marginPercent"
+            id="budget-contingency-percent"
+            label="Margem de contingência %"
+            name="contingencyPercent"
             type="number"
             step="any"
-            value={marginPercent}
-            error={fieldErrors.marginPercent}
-            onChange={(e) => setMarginPercent(e.target.value)}
+            value={contingencyPercent}
+            error={fieldErrors.contingencyPercent}
+            onChange={(e) => setContingencyPercent(e.target.value)}
+          />
+          <FormField
+            id="budget-contribution-percent"
+            label="Margem de contribuição %"
+            name="contributionPercent"
+            type="number"
+            step="any"
+            value={contributionPercent}
+            error={fieldErrors.contributionPercent}
+            onChange={(e) => setContributionPercent(e.target.value)}
           />
         </fieldset>
 
@@ -142,8 +156,9 @@ export function PriceCalculator() {
         <div aria-label="Resultado do orçamento">
           <p>Mão de obra: {formatBrl(result.laborCost)}</p>
           <p>Despesas extras: {formatBrl(result.extraExpenses)}</p>
-          <p>Custo total: {formatBrl(result.totalCost)}</p>
-          <p>Margem: {formatBrl(result.marginValue)}</p>
+          <p>Custo-base: {formatBrl(result.baseCost)}</p>
+          <p>Margem de contingência: {formatBrl(result.contingencyValue)}</p>
+          <p>Margem de contribuição: {formatBrl(result.contributionValue)}</p>
           <p>Preço final: {formatBrl(result.finalPrice)}</p>
         </div>
       ) : null}
