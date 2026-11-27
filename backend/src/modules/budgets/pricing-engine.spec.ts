@@ -1,10 +1,8 @@
 /**
- * Suíte de testes do card #4 — [Budgets] Implementar motor de cálculo de preço.
- * Definida pelo Tech Lead ANTES da implementação (Guia de Engenharia, seção 9).
- * Especificação: openspec/changes/add-pricing-engine/specs/budget-pricing/spec.md
+ * Suíte de testes do card #22 — correção no cálculo do orçamento.
+ * Especificação: openspec/changes/update-budget-pricing-formula/specs/budget-pricing/spec.md
  *
- * É proibido alterar, simplificar ou comentar este arquivo para fazê-lo passar.
- * Se algum caso parecer errado, sinalize no card para o Tech Lead.
+ * Define a fórmula comercial aprovada com margem de contingência e margem de contribuição.
  */
 import {
   calculatePrice,
@@ -16,7 +14,8 @@ const baseInput: PricingInput = {
   hours: '160',
   hourlyRate: '125.00',
   extraExpenses: '4500.00',
-  marginPercent: '20',
+  contingencyPercent: '30',
+  contributionPercent: '20',
 };
 
 function expectInvalid(input: PricingInput, field: keyof PricingInput) {
@@ -36,25 +35,28 @@ describe('calculatePrice — fórmula', () => {
     expect(calculatePrice(baseInput)).toEqual({
       laborCost: '20000.00',
       extraExpenses: '4500.00',
-      totalCost: '24500.00',
-      marginValue: '4900.00',
-      finalPrice: '29400.00',
+      baseCost: '24500.00',
+      contingencyValue: '7350.00',
+      contributionValue: '4900.00',
+      finalPrice: '36750.00',
     });
   });
 
-  it('aceita despesas extras e margem zeradas', () => {
+  it('aceita despesas e margens zeradas', () => {
     expect(
       calculatePrice({
         hours: 10,
         hourlyRate: 50,
         extraExpenses: 0,
-        marginPercent: 0,
+        contingencyPercent: 0,
+        contributionPercent: 0,
       }),
     ).toEqual({
       laborCost: '500.00',
       extraExpenses: '0.00',
-      totalCost: '500.00',
-      marginValue: '0.00',
+      baseCost: '500.00',
+      contingencyValue: '0.00',
+      contributionValue: '0.00',
       finalPrice: '500.00',
     });
   });
@@ -64,37 +66,68 @@ describe('calculatePrice — fórmula', () => {
       hours: 160,
       hourlyRate: 125,
       extraExpenses: 4500,
-      marginPercent: 20,
+      contingencyPercent: 30,
+      contributionPercent: 20,
     });
     expect(fromNumbers).toEqual(calculatePrice(baseInput));
   });
 
-  it('aceita horas e margem com casas decimais', () => {
+  it('aceita horas e margens com casas decimais', () => {
     const result = calculatePrice({
       hours: '7.5',
       hourlyRate: '80.00',
       extraExpenses: '400',
-      marginPercent: '12.5',
+      contingencyPercent: '12.5',
+      contributionPercent: '7.5',
     });
-    expect(result.laborCost).toBe('600.00');
-    expect(result.totalCost).toBe('1000.00');
-    expect(result.marginValue).toBe('125.00');
-    expect(result.finalPrice).toBe('1125.00');
+    expect(result).toEqual({
+      laborCost: '600.00',
+      extraExpenses: '400.00',
+      baseCost: '1000.00',
+      contingencyValue: '125.00',
+      contributionValue: '75.00',
+      finalPrice: '1200.00',
+    });
+  });
+
+  it('valida o exemplo comercial da planilha', () => {
+    expect(
+      calculatePrice({
+        hours: '5',
+        hourlyRate: '5.20',
+        extraExpenses: '0',
+        contingencyPercent: '30',
+        contributionPercent: '20',
+      }),
+    ).toEqual({
+      laborCost: '26.00',
+      extraExpenses: '0.00',
+      baseCost: '26.00',
+      contingencyValue: '7.80',
+      contributionValue: '5.20',
+      finalPrice: '39.00',
+    });
   });
 });
 
 describe('calculatePrice — precisão decimal', () => {
   it('não sofre erro de ponto flutuante', () => {
-    const result = calculatePrice({
-      hours: 3,
-      hourlyRate: 0.1,
-      extraExpenses: 0.2,
-      marginPercent: 10,
+    expect(
+      calculatePrice({
+        hours: 3,
+        hourlyRate: 0.1,
+        extraExpenses: 0.2,
+        contingencyPercent: 30,
+        contributionPercent: 20,
+      }),
+    ).toEqual({
+      laborCost: '0.30',
+      extraExpenses: '0.20',
+      baseCost: '0.50',
+      contingencyValue: '0.15',
+      contributionValue: '0.10',
+      finalPrice: '0.75',
     });
-    expect(result.laborCost).toBe('0.30');
-    expect(result.totalCost).toBe('0.50');
-    expect(result.marginValue).toBe('0.05');
-    expect(result.finalPrice).toBe('0.55');
   });
 
   it('suporta valores altos sem perda de precisão', () => {
@@ -102,7 +135,8 @@ describe('calculatePrice — precisão decimal', () => {
       hours: '100000',
       hourlyRate: '999999.99',
       extraExpenses: '0',
-      marginPercent: '0',
+      contingencyPercent: '0',
+      contributionPercent: '0',
     });
     expect(result.finalPrice).toBe('99999999000.00');
   });
@@ -126,31 +160,35 @@ describe('calculatePrice — arredondamento ROUND_HALF_UP', () => {
     expect(result.laborCost).toBe('0.03');
   });
 
-  it('arredonda o valor da margem para cima no meio centavo', () => {
+  it('arredonda ambas as margens para cima no meio centavo', () => {
     const result = calculatePrice({
       hours: '1',
-      hourlyRate: '10.05',
+      hourlyRate: '10.50',
       extraExpenses: '0',
-      marginPercent: '15',
+      contingencyPercent: '15',
+      contributionPercent: '5',
     });
-    expect(result.marginValue).toBe('1.51');
-    expect(result.finalPrice).toBe('11.56');
+    expect(result.contingencyValue).toBe('1.58');
+    expect(result.contributionValue).toBe('0.53');
+    expect(result.finalPrice).toBe('12.61');
   });
 
-  it('calcula a margem sobre o custo total já arredondado', () => {
+  it('arredonda cada margem separadamente sobre o custo-base', () => {
     expect(
       calculatePrice({
         hours: '0.5',
         hourlyRate: '0.15',
         extraExpenses: '0.02',
-        marginPercent: '5',
+        contingencyPercent: '30',
+        contributionPercent: '20',
       }),
     ).toEqual({
       laborCost: '0.08',
       extraExpenses: '0.02',
-      totalCost: '0.10',
-      marginValue: '0.01',
-      finalPrice: '0.11',
+      baseCost: '0.10',
+      contingencyValue: '0.03',
+      contributionValue: '0.02',
+      finalPrice: '0.15',
     });
   });
 });
@@ -164,18 +202,20 @@ describe('calculatePrice — validação das entradas', () => {
     expectInvalid({ ...baseInput, hourlyRate }, 'hourlyRate');
   });
 
-  it.each(['extraExpenses', 'marginPercent'] as const)(
-    'rejeita %s negativo',
-    (field) => {
-      expectInvalid({ ...baseInput, [field]: '-0.01' }, field);
-    },
-  );
+  it.each([
+    'extraExpenses',
+    'contingencyPercent',
+    'contributionPercent',
+  ] as const)('rejeita %s negativo', (field) => {
+    expectInvalid({ ...baseInput, [field]: '-0.01' }, field);
+  });
 
   it.each([
     ['hours', '1.005'],
     ['hourlyRate', '10.123'],
     ['extraExpenses', '0.001'],
-    ['marginPercent', '12.345'],
+    ['contingencyPercent', '30.123'],
+    ['contributionPercent', '20.123'],
   ] as const)(
     'rejeita %s com mais de duas casas decimais (%p)',
     (field, value) => {
@@ -183,17 +223,22 @@ describe('calculatePrice — validação das entradas', () => {
     },
   );
 
-  it.each([
-    'abc',
-    '',
-    '   ',
-    Number.NaN,
-    Number.POSITIVE_INFINITY,
-    '1e',
-    '10,50',
-  ])('rejeita valor não numérico %p', (value) => {
-    expectInvalid({ ...baseInput, marginPercent: value }, 'marginPercent');
-  });
+  it.each(['contingencyPercent', 'contributionPercent'] as const)(
+    'rejeita %s com valores não numéricos',
+    (field) => {
+      for (const value of [
+        'abc',
+        '',
+        '   ',
+        Number.NaN,
+        Number.POSITIVE_INFINITY,
+        '1e',
+        '10,50',
+      ]) {
+        expectInvalid({ ...baseInput, [field]: value }, field);
+      }
+    },
+  );
 
   it('informa o campo inválido na mensagem do erro', () => {
     expect(() => calculatePrice({ ...baseInput, hours: 0 })).toThrow(/hours/);

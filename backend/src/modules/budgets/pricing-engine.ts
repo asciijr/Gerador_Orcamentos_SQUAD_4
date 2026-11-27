@@ -1,12 +1,11 @@
 /**
  * Motor de cálculo de preço do módulo budgets (arquivo interno do módulo).
- * Card #4 — contrato fixado pela suíte pricing-engine.spec.ts.
+ * Cards #4 e #22 — contrato fixado pela suíte pricing-engine.spec.ts.
  * Especificação: openspec/specs/budget-pricing/spec.md
  *
  * O cálculo tem três etapas independentes:
  *   1. parseInput: valida e converte as entradas para Decimal;
- *   2. applyPricingFormula: aplica a fórmula de preço (único ponto a mudar
- *      quando o Diretor Comercial aprovar a fórmula definitiva);
+ *   2. applyPricingFormula: aplica a fórmula comercial (custo-base + contingência + contribuição);
  *   3. formatResult: serializa cada valor com exatamente duas casas.
  *
  * Valores monetários nunca passam por `number`: tudo é feito com decimal.js.
@@ -17,14 +16,16 @@ export type PricingInput = {
   hours: string | number;
   hourlyRate: string | number;
   extraExpenses: string | number;
-  marginPercent: string | number;
+  contingencyPercent: string | number;
+  contributionPercent: string | number;
 };
 
 export type PricingResult = {
   laborCost: string;
   extraExpenses: string;
-  totalCost: string;
-  marginValue: string;
+  baseCost: string;
+  contingencyValue: string;
+  contributionValue: string;
   finalPrice: string;
 };
 
@@ -60,7 +61,8 @@ const MUST_BE_POSITIVE: Record<PricingField, boolean> = {
   hours: true,
   hourlyRate: true,
   extraExpenses: false,
-  marginPercent: false,
+  contingencyPercent: false,
+  contributionPercent: false,
 };
 
 /** Arredonda para duas casas com ROUND_HALF_UP (equivale ao ARRED das planilhas). */
@@ -88,8 +90,6 @@ function parseField(input: PricingInput, field: PricingField): Decimal {
   if (!isValid) {
     throw new InvalidPricingInputError(field);
   }
-  // Já sabemos que value >= 0; abs() só normaliza "-0" para 0,
-  // para que nenhuma saída seja serializada como "-0.00".
   return value.abs();
 }
 
@@ -98,42 +98,55 @@ function parseInput(input: PricingInput): ParsedInput {
     hours: parseField(input, 'hours'),
     hourlyRate: parseField(input, 'hourlyRate'),
     extraExpenses: parseField(input, 'extraExpenses'),
-    marginPercent: parseField(input, 'marginPercent'),
+    contingencyPercent: parseField(input, 'contingencyPercent'),
+    contributionPercent: parseField(input, 'contributionPercent'),
   };
 }
 
 /**
- * FÓRMULA DE PREÇO — PROVISÓRIA.
- * Proposta genérica do Blueprint, ainda não validada pelo Diretor Comercial.
- *
- *   mão de obra   = ARRED(horas × custo/hora; 2)
- *   custo total   = mão de obra + despesas extras
- *   valor margem  = ARRED(custo total × margem% / 100; 2)
- *   preço final   = custo total + valor da margem
- *
- * Para trocar a fórmula, abra um change novo no OpenSpec, deixe o Tech Lead
- * ajustar a suíte de testes e só então altere ESTA função.
+ * Fórmula comercial aprovada (card #22):
+ *   mão de obra  = ARRED(horas × custo/hora; 2)
+ *   custo-base   = mão de obra + despesas extras
+ *   contingência = ARRED(custo-base × contingencyPercent / 100; 2)
+ *   contribuição = ARRED(custo-base × contributionPercent / 100; 2)
+ *   preço final  = custo-base + contingência + contribuição
  */
 function applyPricingFormula({
   hours,
   hourlyRate,
   extraExpenses,
-  marginPercent,
+  contingencyPercent,
+  contributionPercent,
 }: ParsedInput): PricingValues {
   const laborCost = roundMoney(hours.times(hourlyRate));
-  const totalCost = laborCost.plus(extraExpenses);
-  const marginValue = roundMoney(totalCost.times(marginPercent).dividedBy(100));
-  const finalPrice = totalCost.plus(marginValue);
+  const baseCost = roundMoney(laborCost.plus(extraExpenses));
+  const contingencyValue = roundMoney(
+    baseCost.times(contingencyPercent).dividedBy(100),
+  );
+  const contributionValue = roundMoney(
+    baseCost.times(contributionPercent).dividedBy(100),
+  );
+  const finalPrice = roundMoney(
+    baseCost.plus(contingencyValue).plus(contributionValue),
+  );
 
-  return { laborCost, extraExpenses, totalCost, marginValue, finalPrice };
+  return {
+    laborCost,
+    extraExpenses,
+    baseCost,
+    contingencyValue,
+    contributionValue,
+    finalPrice,
+  };
 }
 
 function formatResult(values: PricingValues): PricingResult {
   return {
     laborCost: values.laborCost.toFixed(DECIMAL_PLACES),
     extraExpenses: values.extraExpenses.toFixed(DECIMAL_PLACES),
-    totalCost: values.totalCost.toFixed(DECIMAL_PLACES),
-    marginValue: values.marginValue.toFixed(DECIMAL_PLACES),
+    baseCost: values.baseCost.toFixed(DECIMAL_PLACES),
+    contingencyValue: values.contingencyValue.toFixed(DECIMAL_PLACES),
+    contributionValue: values.contributionValue.toFixed(DECIMAL_PLACES),
     finalPrice: values.finalPrice.toFixed(DECIMAL_PLACES),
   };
 }
