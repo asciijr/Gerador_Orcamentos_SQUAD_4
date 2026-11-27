@@ -17,19 +17,21 @@ datasource db {
 /// Orçamento emitido. Tabela do módulo budgets: só ele lê e escreve aqui.
 /// Guarda as entradas e o resultado do cálculo no momento da emissão, para auditoria.
 model Budget {
-  id            String   @id @default(uuid()) @db.Uuid
-  number        Int      @unique @default(autoincrement())
-  clientName    String   @map("client_name") @db.VarChar(150)
-  projectName   String   @map("project_name") @db.VarChar(150)
-  hours         Decimal  @db.Decimal(10, 2)
-  hourlyRate    Decimal  @map("hourly_rate") @db.Decimal(12, 2)
-  extraExpenses Decimal  @map("extra_expenses") @db.Decimal(12, 2)
-  marginPercent Decimal  @map("margin_percent") @db.Decimal(5, 2)
-  laborCost     Decimal  @map("labor_cost") @db.Decimal(14, 2)
-  totalCost     Decimal  @map("total_cost") @db.Decimal(14, 2)
-  marginValue   Decimal  @map("margin_value") @db.Decimal(14, 2)
-  finalPrice    Decimal  @map("final_price") @db.Decimal(14, 2)
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  id                  String   @id @default(uuid()) @db.Uuid
+  number              Int      @unique @default(autoincrement())
+  clientName          String   @map("client_name") @db.VarChar(150)
+  projectName         String   @map("project_name") @db.VarChar(150)
+  hours               Decimal  @db.Decimal(10, 2)
+  hourlyRate          Decimal  @map("hourly_rate") @db.Decimal(12, 2)
+  extraExpenses       Decimal  @map("extra_expenses") @db.Decimal(12, 2)
+  contingencyPercent  Decimal  @map("contingency_percent") @db.Decimal(5, 2)
+  contributionPercent Decimal  @map("contribution_percent") @db.Decimal(5, 2)
+  laborCost           Decimal  @map("labor_cost") @db.Decimal(14, 2)
+  baseCost            Decimal  @map("base_cost") @db.Decimal(14, 2)
+  contingencyValue    Decimal  @map("contingency_value") @db.Decimal(14, 2)
+  contributionValue   Decimal  @map("contribution_value") @db.Decimal(14, 2)
+  finalPrice          Decimal  @map("final_price") @db.Decimal(14, 2)
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@index([clientName])
   @@index([createdAt])
