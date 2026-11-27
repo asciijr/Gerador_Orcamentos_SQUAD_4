@@ -18,13 +18,13 @@ context: |
   orçamento, gera o PDF com a identidade da ASCII e lista o histórico para auditoria.
   Sem CRM e sem envio de e-mail no MVP.
 
-  Fórmula do MVP (Blueprint, PROVISÓRIA até a validação do Diretor Comercial;
-  implementada em backend/src/modules/budgets/pricing-engine.ts, função applyPricingFormula,
-  com spec em openspec/specs/budget-pricing/spec.md):
-    custoMaoDeObra = horas × custoHora
-    custoTotal     = custoMaoDeObra + despesasExtras
-    valorMargem    = custoTotal × margem% / 100
-    precoFinal     = custoTotal + valorMargem
+  Fórmula comercial (implementada em backend/src/modules/budgets/pricing-engine.ts,
+  função applyPricingFormula, com spec em openspec/specs/budget-pricing/spec.md):
+    custoMaoDeObra   = ARRED(horas × custoHora, 2)
+    custoBase        = custoMaoDeObra + despesasExtras
+    valorContingencia = ARRED(custoBase × contingencyPercent / 100, 2)
+    valorContribuicao = ARRED(custoBase × contributionPercent / 100, 2)
+    precoFinal       = custoBase + valorContingencia + valorContribuicao
   Valores com decimal.js (nunca number/float); parcelas com 2 casas, ROUND_HALF_UP.
 
   Stack (ASCII Playbook, Guia de Engenharia):
