@@ -1,4 +1,4 @@
-﻿import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PriceCalculator } from './PriceCalculator';
 import { BudgetApiError, calculateBudget } from '../../../services/budgets';
@@ -29,11 +29,11 @@ describe('PriceCalculator', () => {
 
   it('chama calculateBudget ao clicar em Calcular e exibe as parcelas em R$', async () => {
     vi.mocked(calculateBudget).mockResolvedValueOnce({
-      laborCost: 800,
-      extraExpenses: 200,
-      totalCost: 1000,
-      marginValue: 250,
-      finalPrice: 1250,
+      laborCost: '800.00',
+      extraExpenses: '200.00',
+      totalCost: '1000.00',
+      marginValue: '250.00',
+      finalPrice: '1250.00',
     });
 
     render(<PriceCalculator />);
@@ -51,10 +51,10 @@ describe('PriceCalculator', () => {
       expect(calculateBudget).toHaveBeenCalledWith({
         client: 'Acme',
         project: 'Portal',
-        hours: 10,
-        hourlyRate: 80,
-        extraExpenses: 200,
-        marginPercent: 25,
+        hours: '10',
+        hourlyRate: '80',
+        extraExpenses: '200',
+        marginPercent: '25',
       });
     });
 

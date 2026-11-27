@@ -1,5 +1,5 @@
-﻿import { useState, type FormEvent } from 'react';
-import { Button } from '../../atoms/Button/Button';
+import { useState, type FormEvent } from 'react';
+import { Button } from '../../atoms/Button';
 import { FormField } from '../../molecules/FormField';
 import {
   BudgetApiError,
@@ -13,8 +13,8 @@ const currencyFormatter = new Intl.NumberFormat('pt-BR', {
   currency: 'BRL',
 });
 
-function formatBrl(value: number): string {
-  return currencyFormatter.format(value);
+function formatBrl(value: string): string {
+  return currencyFormatter.format(Number(value));
 }
 
 export function PriceCalculator() {
@@ -40,10 +40,10 @@ export function PriceCalculator() {
       const response = await calculateBudget({
         client: client.trim(),
         project: project.trim(),
-        hours: Number(hours),
-        hourlyRate: Number(hourlyRate),
-        extraExpenses: Number(extraExpenses),
-        marginPercent: Number(marginPercent),
+        hours: hours.trim(),
+        hourlyRate: hourlyRate.trim(),
+        extraExpenses: extraExpenses.trim(),
+        marginPercent: marginPercent.trim(),
       });
       setResult(response);
     } catch (error: unknown) {

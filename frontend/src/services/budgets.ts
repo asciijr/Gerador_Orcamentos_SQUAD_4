@@ -1,18 +1,18 @@
-﻿export interface CalculateBudgetInput {
+export interface CalculateBudgetInput {
   client: string;
   project: string;
-  hours: number;
-  hourlyRate: number;
-  extraExpenses: number;
-  marginPercent: number;
+  hours: string;
+  hourlyRate: string;
+  extraExpenses: string;
+  marginPercent: string;
 }
 
 export interface BudgetCalculationResult {
-  laborCost: number;
-  extraExpenses: number;
-  totalCost: number;
-  marginValue: number;
-  finalPrice: number;
+  laborCost: string;
+  extraExpenses: string;
+  totalCost: string;
+  marginValue: string;
+  finalPrice: string;
 }
 
 export type BudgetFieldName = 'hours' | 'hourlyRate' | 'extraExpenses' | 'marginPercent';
