@@ -38,7 +38,7 @@ O sistema MUST arredondar a mão de obra e o valor da margem para duas casas com
 - **THEN** mão de obra = "0.08", custo total = "0.10", valor da margem = "0.01" e preço final = "0.11"
 
 ### Requirement: Validação das entradas
-O sistema MUST rejeitar o cálculo, informando o campo, quando horas ou custo/hora não forem maiores que zero, quando despesas extras ou margem forem negativas, quando um valor tiver mais de duas casas decimais ou não for numérico finito. O endpoint do card #5 traduz essa rejeição em HTTP 400.
+O sistema MUST rejeitar o cálculo, informando o campo, quando horas ou custo/hora não forem maiores que zero, quando despesas extras ou margem forem negativas, quando um valor tiver mais de duas casas decimais ou não for numérico finito. O endpoint `POST /api/budgets/calculate` traduz essa rejeição em HTTP 400.
 
 #### Scenario: Horas iguais a zero
 - **WHEN** horas = 0
@@ -55,3 +55,19 @@ O sistema MUST rejeitar o cálculo, informando o campo, quando horas ou custo/ho
 #### Scenario: Valor não numérico
 - **WHEN** margem = "abc", "10,50", vazio ou infinito
 - **THEN** o cálculo é rejeitado apontando o campo "marginPercent"
+
+#### Scenario: Cálculo válido pela API
+- **WHEN** o cliente envia um payload válido para `POST /api/budgets/calculate`
+- **THEN** a API responde HTTP 200 com as parcelas calculadas em texto com duas casas decimais
+
+#### Scenario: Campo obrigatório ausente pela API
+- **WHEN** o cliente omite `client`, `project`, `hours`, `hourlyRate`, `extraExpenses` ou `marginPercent`
+- **THEN** a API responde HTTP 400 indicando a validação do campo ausente
+
+#### Scenario: Campo desconhecido pela API
+- **WHEN** o cliente envia um campo não declarado no DTO de cálculo
+- **THEN** a API responde HTTP 400 por rejeição de campo desconhecido
+
+#### Scenario: Campo numérico inválido pela API
+- **WHEN** o cliente envia um valor numérico fora das regras do motor de preço
+- **THEN** a API responde HTTP 400 com `statusCode`, `field`, `message` e `fieldErrors` referentes ao campo inválido
